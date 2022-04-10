@@ -1,24 +1,26 @@
-from aiogram import Bot
-from aiogram.utils import executor
-from aiogram.dispatcher import Dispatcher
-from aiogram.dispatcher.filters import Text
-from keyboard import *
+import asyncio
 import logging
-import pandas as pd
-import numpy as np
-from func import *
+
 import aioschedule
-from googleapiclient import discovery
-from oauth2client.service_account import ServiceAccountCredentials
 import httplib2
 import mibian
-import asyncio
+import numpy as np
+import pandas as pd
+from aiogram import Bot
+from aiogram.dispatcher import Dispatcher
+from aiogram.dispatcher.filters import Text
+from aiogram.utils import executor
+from googleapiclient import discovery
+from oauth2client.service_account import ServiceAccountCredentials
+
 import config
+from func import *
+from keyboard import *
 
 logging.basicConfig(level=logging.INFO)
 
 
-# Общая часть, рассылка сообщений
+# Общая часть, рассылка сообщений и обновление документа
 
 
 async def updater():
@@ -134,7 +136,7 @@ bot = Bot(token=config.botkey)
 dp = Dispatcher(bot)
 
 
-# Часть клиента
+# Часть клиента, команды и сообщения
 @dp.message_handler(commands="start")
 async def welcome(message: types.Message):
     joinedFile = open("users.txt", "r")
