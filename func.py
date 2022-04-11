@@ -91,3 +91,27 @@ def rows_load():
 
     return add
 
+def colls():
+
+    gc = gd.service_account(filename='Seetzzz-1cb93f64d8d7.json')
+    worksheet = gc.open("work_table").worksheet('Активы с Call опционами')
+
+    a_tick = worksheet.get('A2:A60')
+    a = []
+
+    for i in range(len(a_tick)):
+        a.append(a_tick[i])
+        a[i] = str(a[i])[2:-2]
+        if a[i] == 'Ticker':
+            tmp = i
+            break
+
+    at = worksheet.get(f'A{tmp + 3}:A{tmp + 12}')
+    res = []
+
+    print("Данные получены")
+    for i in range(len(at)):
+        res.append(str(at[i]))
+        res[i] = res[i][2:-2]
+
+    return res
