@@ -18,6 +18,7 @@ from func import *
 from keyboard import *
 
 logging.basicConfig(level=logging.INFO)
+pd.options.mode.chained_assignment = None
 
 
 # Общая часть, рассылка сообщений и обновление документа
@@ -27,6 +28,7 @@ async def updater():
     rows = rows_load()  # Внимательно, заполнить количество строк!!!!!!!
 
     print('Начинаю обновление документа')
+    print('Загрузка данных')
     LIST = 'Опционный портфель (short)'
     CREDENTIALS_FILE = 'Seetzzz-1cb93f64d8d7.json'
     spreadsheet_id = '1bfNJIgSEo9V5Jww1-EoUh_onba2bGY2LpDVx4aYlPzc'
@@ -59,10 +61,10 @@ async def updater():
     df3['Current Premium'] = ''
     df3.head()
 
-    print(df3)
+    #print(df3)
 
-    print(yf.download('FB'))
-
+    #print(yf.download('FB'))
+    print('Получение данных Яху')
     for i in range(len(df3)):
         try:
             ticker = df3['Ticker_Yahoo'][i]
@@ -84,6 +86,7 @@ async def updater():
         except:
             pass
 
+    print('Начинаю заполнение документа')
     gc = gd.service_account(filename='Seetzzz-1cb93f64d8d7.json')
     worksheet = gc.open("work_table").worksheet("Опционный портфель (short)")
     for i in range(len(df3)):
