@@ -112,13 +112,17 @@ async def updater_colls():
     worksheet = gc.open("work_table").worksheet('Активы с Call опционами')
 
     d_len = worksheet.get('D2:D60')
+    q_len = worksheet.get('Q2:Q60')
     a_tick = worksheet.get('A2:A60')
     d = []
+    q = []
     a = []
 
     for i in range(len(d_len)):
         if (len(d_len[i])) == 1:
             d.append(d_len[i])
+            q.append(q_len[i])
+            q[i] = int(str(q[i])[2:-2])
         else:
             break
 
@@ -131,8 +135,8 @@ async def updater_colls():
 
     guru_tickers = []
     for i in range(len(d)):
-        guru_tickers.append(str(d[i]))
-        guru_tickers[i] = guru_tickers[i][2:-2]
+        if q[i] == 0:
+            guru_tickers.append(str(d[i])[2:-2])
 
     tickers_list = []
     gf_list = []
@@ -271,6 +275,25 @@ async def updater_colls():
     print("Обновление завершено")
 
 
+async def vix_sender():
+    joinedFile = open("users.txt", "r")
+    joinedUsers = set()
+    vix, gold, euro, rassel, emerg = fred_vix()
+    china = china_vix()
+    print('Начинаю рассылку VIX')
+    for line in joinedFile:
+        joinedUsers.add(line.strip())
+    joinedFile.close()
+    for user in joinedUsers:
+        print('Отправляю сообщение ' + str(user))
+        await bot.send_message(user, f"VIX: {vix}")
+        await bot.send_message(user, f"Gold VIX: {gold}")
+        await bot.send_message(user, f"Euro VIX: {euro}")
+        await bot.send_message(user, f"Rassel2000 VIX: {rassel}")
+        await bot.send_message(user, f"Emerging VIX: {emerg}")
+        await bot.send_message(user, f"China VIX: {china}")
+
+
 async def sender():
     joinedFile = open("users.txt", "r")
     joinedUsers = set()
@@ -293,8 +316,9 @@ async def sender():
             pass
     print('Рассылка зваершена')
 
-
+# Изменить время отправки на серверное
 async def scheduler():
+    aioschedule.every().day.at("12:00").do(vix_sender)
     aioschedule.every().day.at("12:30").do(updater)  # Для выбора времени рассылки изменить чисто в скобках после at
     aioschedule.every().day.at("12:33").do(updater_colls)
     aioschedule.every().day.at("12:35").do(sender)
@@ -362,6 +386,19 @@ async def stock_pr(message: types.Message):
     await bot.send_message(message.from_user.id,
                            "Цену для какой компании вы хотите? Пока их мало, но скоро будет больше.",
                            reply_markup=stocks)
+
+
+@dp.message_handler(Text(equals='VIX'))
+async def vix_values(message: types.Message):
+    await bot.send_message(message.from_user.id, "Подождите немного, загружаю данные")
+    vix, gold, euro, rassel, emerg = fred_vix()
+    china = china_vix()
+    await bot.send_message(message.from_user.id, f"VIX: {vix}")
+    await bot.send_message(message.from_user.id, f"Gold VIX: {gold}")
+    await bot.send_message(message.from_user.id, f"Euro VIX: {euro}")
+    await bot.send_message(message.from_user.id, f"Rassel2000 VIX: {rassel}")
+    await bot.send_message(message.from_user.id, f"Emering VIX: {emerg}")
+    await bot.send_message(message.from_user.id, f"China VIX: {china}")
 
 
 @dp.message_handler(Text(equals=["INTC", "AAPL", "CRL", "AMGN", "GILD"]))

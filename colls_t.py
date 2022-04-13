@@ -12,21 +12,26 @@ import yfinance as yf
 
 
 gc = gd.service_account(filename='Seetzzz-1cb93f64d8d7.json')
-#sh = gc.open("work_table")
 worksheet = gc.open("work_table").worksheet('Активы с Call опционами')
 
 
 d_len = worksheet.get('D2:D60')
+q_len = worksheet.get('Q2:Q60')
 a_tick = worksheet.get('A2:A60')
-d = []
-a = []
-for i in range(len(a_tick)):
 
-    if (len(a_tick[i])) == 1:
+d = []
+q = []
+a = []
+test = []
+for i in range(len(d_len)):
+    if (len(d_len[i])) == 1:
         d.append(d_len[i])
+        q.append(q_len[i])
+        q[i] = int(str(q[i])[2:-2])
+        print(f"{d[i]}   {q[i]}")
     else:
         break
-
+print(q)
 for i in range(len(a_tick)):
     a.append(a_tick[i])
     a[i] = str(a[i])[2:-2]
@@ -34,14 +39,24 @@ for i in range(len(a_tick)):
         tmp = i
         break
 
+print(q_len[0])
 print(a)
 print(tmp)
 guru_tickers = []
 for i in range(len(d)):
-    guru_tickers.append(str(d[i]))
-    guru_tickers[i] = guru_tickers[i][2:-2]
+    if q[i] == 0:
+        guru_tickers.append(str(d[i])[2:-2])
+
+
+
 
 print(d)
+print(len(d))
+print(guru_tickers)
+print(len(guru_tickers))
+
+
+
 print(guru_tickers)
 
 
@@ -200,7 +215,11 @@ print(TOTAL_DF.values.tolist())
 print(TOTAL_DF.columns.values.tolist() + TOTAL_DF.values.tolist())
 
 
-#worksheet.update(f'A{tmp+3}', TOTAL_DF.values.tolist())
+
+print(TOTAL_DF['Ticker'][:10].tolist())
+
+
+worksheet.update(f'A{tmp+3}', TOTAL_DF.values.tolist())
 
 at = worksheet.get(f'A{tmp+3}:A{tmp+12}')
 
@@ -210,3 +229,4 @@ for i in range(len(at)):
     res[i] = res[i][2:-2]
 
 print(res)
+

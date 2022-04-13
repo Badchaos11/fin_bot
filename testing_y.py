@@ -83,4 +83,7 @@ for i in range(len(df3)):
 
 print(df3)
 
+test = options()
+print(test)
+
 

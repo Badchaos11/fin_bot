@@ -1,7 +1,7 @@
 from aiogram import types
 
 keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-buttons = ["Посмотреть опционы", "Цена акции", "Цели для колов"]
+buttons = ["Посмотреть опционы", "Цена акции", "Цели для колов", "VIX"]
 keyboard.add(*buttons)
 
 stocks = types.ReplyKeyboardMarkup(resize_keyboard=True)

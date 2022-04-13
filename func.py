@@ -1,7 +1,11 @@
 import yfinance as yf
 from datetime import date, timedelta
 import gspread as gd
-from time import sleep
+import datetime
+import requests
+from dateutil.relativedelta import relativedelta
+import pandas as pd
+import numpy as np
 
 
 def stock_price(ticker):
@@ -52,20 +56,25 @@ def options():
             t_arr[i] = s_arr[i]
 
     for i in range(len(a)):
-        a_arr[i] = str(a_arr[i])[2:-2]
-        s_arr[i] = str(s_arr[i]).replace(',', '.')
-        t_arr[i] = str(t_arr[i]).replace(',', '.')
-        s_arr[i] = float(s_arr[i][2:-3])
-        t_arr[i] = float(t_arr[i][2:-3])
-
+        try:
+            a_arr[i] = str(a_arr[i])[2:-2]
+            s_arr[i] = str(s_arr[i]).replace(',', '.')
+            t_arr[i] = str(t_arr[i]).replace(',', '.')
+            s_arr[i] = float(s_arr[i][2:-3])
+            t_arr[i] = float(t_arr[i][2:-3])
+        except:
+            pass
     print('Данные преобразованы')
 
     result = []
     index = []
     for i in range(len(a_arr)):
-        if s_arr[i] < t_arr[i]:
-            result.append(a_arr[i])
-            index.append(str(i+2))
+        try:
+            if s_arr[i] < t_arr[i]:
+                result.append(a_arr[i])
+                index.append(str(i+2))
+        except:
+            pass
 
     for i in range(len(result)):
         result[i] = str(result[i] + ' ' + index[i])
@@ -91,6 +100,7 @@ def rows_load():
 
     return add
 
+
 def colls():
 
     gc = gd.service_account(filename='Seetzzz-1cb93f64d8d7.json')
@@ -115,3 +125,176 @@ def colls():
         res[i] = res[i][2:-2]
 
     return res
+
+
+def fred_vix():
+    today_d = datetime.date.today().strftime("%Y-%m-%d")
+    six_mo = datetime.date.today() + relativedelta(months=-6)
+    six_mo = six_mo.strftime("%Y-%m-%d")
+    key = '97539e5b6d2151e8ff034e24e8410c89'
+    url = 'https://api.stlouisfed.org/fred/series/observations'
+
+    params1 = {
+        'series_id': 'VIXCLS',
+        'realtime_start': six_mo,
+        'realtime_end': today_d,
+        'observation_start': six_mo,
+        'observation_end': today_d,
+        'api_key': key,
+        'file_type': 'json',
+    }
+    params2 = {
+        'series_id': 'GVZCLS',
+        'realtime_start': six_mo,
+        'realtime_end': today_d,
+        'observation_start': six_mo,
+        'observation_end': today_d,
+        'api_key': key,
+        'file_type': 'json',
+    }
+    params3 = {
+        'series_id': 'EVZCLS',
+        'realtime_start': six_mo,
+        'realtime_end': today_d,
+        'observation_start': six_mo,
+        'observation_end': today_d,
+        'api_key': key,
+        'file_type': 'json',
+    }
+    params4 = {
+        'series_id': 'RVXCLS',
+        'realtime_start': six_mo,
+        'realtime_end': today_d,
+        'observation_start': six_mo,
+        'observation_end': today_d,
+        'api_key': key,
+        'file_type': 'json',
+    }
+    params5 = {
+        'series_id': 'VXEEMCLS',
+        'realtime_start': six_mo,
+        'realtime_end': today_d,
+        'observation_start': six_mo,
+        'observation_end': today_d,
+        'api_key': key,
+        'file_type': 'json',
+    }
+
+    response1 = requests.get(url, params=params1)
+    print('Got VIX')
+    response2 = requests.get(url, params=params2)
+    print('Got Gold VIX')
+    response3 = requests.get(url, params=params3)
+    print('Got Europe VIX')
+    response4 = requests.get(url, params=params4)
+    print('Got Rassel VIX')
+    response5 = requests.get(url, params=params5)
+    print('Got Em Markets')
+
+    print('Start parsing responses')
+    rest1 = response1.json()['observations']
+    vix_list = []
+    for i in range(len(rest1)):
+        if len(rest1[i]['value']) == 1:
+           continue
+        else:
+            vix_list.append(float(rest1[i]['value']))
+
+    rest2 = response2.json()['observations']
+    gold_list = []
+    for i in range(len(rest2)):
+        if len(rest2[i]['value']) == 1:
+            continue
+        else:
+            gold_list.append(float(rest2[i]['value']))
+
+    rest3 = response3.json()['observations']
+    euro_list = []
+    for i in range(len(rest3)):
+        if len(rest3[i]['value']) == 1:
+            continue
+        else:
+            euro_list.append(float(rest3[i]['value']))
+
+    rest4 = response4.json()['observations']
+    rassel_list = []
+    for i in range(len(rest4)):
+        if len(rest4[i]['value']) == 1:
+            continue
+        else:
+            rassel_list.append(float(rest4[i]['value']))
+
+    rest5 = response5.json()['observations']
+    razv_list = []
+    for i in range(len(rest5)):
+        if len(rest5[i]['value']) == 1:
+            continue
+        else:
+            razv_list.append(float(rest5[i]['value']))
+
+    print('Taking values')
+
+    VIX = {
+        'current': vix_list[-1],
+        'min': min(vix_list),
+        'max': max(vix_list)
+    }
+    GOLD = {
+        'current': gold_list[-1],
+        'min': min(gold_list),
+        'max': max(gold_list)
+    }
+    EUROPE = {
+        'current': euro_list[-1],
+        'min': min(euro_list),
+        'max': max(euro_list)
+    }
+    RASSEL = {
+        'current': rassel_list[-1],
+        'min': min(rassel_list),
+        'max': max(rassel_list)
+    }
+    RAZVITIE = {
+        'current': razv_list[-1],
+        'min': min(razv_list),
+        'max': max(razv_list)
+    }
+
+    return VIX, GOLD, EUROPE, RASSEL, RAZVITIE
+
+
+def china_vix():
+
+    hk = pd.read_excel('Hong Kong (Hang Seng).xlsx', sheet_name='Hong Kong')
+    today_d = datetime.date.today().strftime("%Y-%m-%d")
+    six_mo = datetime.date.today() + relativedelta(years=-1)
+    six_mo = six_mo.strftime("%Y-%m-%d")
+
+    tickers_list = []
+    for i in range(len(hk)):
+        tickers_list.append(hk['ticker Guru'][i])
+        tickers_list[i] = tickers_list[i][6:] + '.HK'
+
+    ohlc = yf.download(tickers_list, start=six_mo, end=today_d)['Adj Close']
+    ohl = (np.log(ohlc / ohlc.shift(-1)))
+    vix = []
+    len_o = int(len(ohl) / 2)
+
+    for i in range(len_o + 1):
+        ohl_y2 = ohl[i: len_o + i]
+        china_ret = ohl_y2.min(axis=1)
+        daily_m = china_ret.std()
+        vix.append(daily_m)
+
+    days_30 = ohlc[-10:].min(axis=1)
+    returns_30 = np.log(days_30 / days_30.shift(-1))
+    daily_std_30 = np.std(returns_30)
+    std_30 = (daily_std_30 * 252 ** 0.5)
+
+    VIX_CHINA = {
+        'current': round(std_30, 4) * 100,
+        'min': round(min(vix) * 252 ** .5, 4) * 100,
+        'max': round(max(vix) * 252 ** .5, 4) * 100
+    }
+
+    return VIX_CHINA
