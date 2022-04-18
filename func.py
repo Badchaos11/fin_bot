@@ -265,36 +265,34 @@ def fred_vix():
 
 def china_vix():
 
-    hk = pd.read_excel('Hong Kong (Hang Seng).xlsx', sheet_name='Hong Kong')
-    today_d = datetime.date.today().strftime("%Y-%m-%d")
-    six_mo = datetime.date.today() + relativedelta(years=-1)
-    six_mo = six_mo.strftime("%Y-%m-%d")
+    ticker = 'KWEB'
+    end = datetime.date.today().strftime("%Y-%m-%d")
+    start = datetime.date.today() + relativedelta(years=-1)
+    start = start.strftime("%Y-%m-%d")
 
-    tickers_list = []
-    for i in range(len(hk)):
-        tickers_list.append(hk['ticker Guru'][i])
-        tickers_list[i] = tickers_list[i][6:] + '.HK'
+    print('Загружаю данные')
+    ohlc = pd.DataFrame()
+    ohlc['Adj Close'] = yf.download(ticker, start, end)['Adj Close']
 
-    ohlc = yf.download(tickers_list, start=six_mo, end=today_d)['Adj Close']
-    ohl = (np.log(ohlc / ohlc.shift(-1)))
-    vix = []
-    len_o = int(len(ohl) / 2)
+    print('Обрабатываю данные')
+    ohlc['returns'] = np.log(ohlc / ohlc.shift(-1))
+    window_len = int(len(ohlc) / 2)
+    gh = ohlc['returns'].rolling(window_len).std() * (252 ** 0.5)
 
-    for i in range(len_o + 1):
-        ohl_y2 = ohl[i: len_o + i]
-        china_ret = ohl_y2.min(axis=1)
-        daily_m = china_ret.std()
-        vix.append(daily_m)
 
-    days_30 = ohlc[-10:].min(axis=1)
-    returns_30 = np.log(days_30 / days_30.shift(-1))
-    daily_std_30 = np.std(returns_30)
-    std_30 = (daily_std_30 * 252 ** 0.5)
+    days_10 = ohlc['Adj Close'][-10:]
+    ret_10 = np.log(days_10 / days_10.shift(-1))
+    daily_std_10 = np.std(ret_10)
+    std_10 = daily_std_10 * 252 ** .5
+    CURRENT = round(std_10 * 100, 2)
+    MAX = round(gh.max() * 100, 2)
+    MIN = round(gh.min() * 100, 2)
+    print('Отдаю данные')
 
     VIX_CHINA = {
-        'current': round(std_30, 4) * 100,
-        'min': round(min(vix) * 252 ** .5, 4) * 100,
-        'max': round(max(vix) * 252 ** .5, 4) * 100
+        'current': CURRENT,
+        'min': MIN,
+        'max': MAX
     }
 
     return VIX_CHINA
