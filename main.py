@@ -73,14 +73,17 @@ async def stock_pr(message: types.Message):
 @dp.message_handler(Text(equals='VIX'))
 async def vix_values(message: types.Message):
     await bot.send_message(message.from_user.id, "Подождите немного, загружаю данные")
-    vix, gold, euro, rassel, emerg = fred_vix()
+    vix, gold, euro, rassel, emerg, nasdaq, rsi_vix, rsi_nasdaq = fred_vix()
     china = china_vix()
     await bot.send_message(message.from_user.id, f"VIX: {vix}")
     await bot.send_message(message.from_user.id, f"Gold VIX: {gold}")
     await bot.send_message(message.from_user.id, f"Euro VIX: {euro}")
-    await bot.send_message(message.from_user.id, f"Rassel2000 VIX: {rassel}")
+    await bot.send_message(message.from_user.id, f"Russell 2000 VIX: {rassel}")
     await bot.send_message(message.from_user.id, f"Emering VIX: {emerg}")
     await bot.send_message(message.from_user.id, f"China VIX: {china}")
+    await bot.send_message(message.from_user.id, f"NASDAQ VIX: {nasdaq}")
+    await bot.send_message(message.from_user.id, f"RSI VIX: {rsi_vix}")
+    await bot.send_message(message.from_user.id, f"NASDAQ RSI: {rsi_nasdaq}")
 
 
 @dp.message_handler(Text(equals=["INTC", "AAPL", "CRL", "AMGN", "GILD"]))

@@ -6,6 +6,8 @@ import requests
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 import numpy as np
+import pandas_ta as pta
+
 
 
 def stock_price(ticker):
@@ -179,26 +181,40 @@ def fred_vix():
         'api_key': key,
         'file_type': 'json',
     }
+    params6 = {
+        'series_id': 'VXNCLS',
+        'realtime_start': six_mo,
+        'realtime_end': today_d,
+        'observation_start': six_mo,
+        'observation_end': today_d,
+        'api_key': key,
+        'file_type': 'json',
+    }
 
+    print('Начинаю загрузку данных')
     response1 = requests.get(url, params=params1)
     print('Got VIX')
     response2 = requests.get(url, params=params2)
-    print('Got Gold VIX')
+    print('Got Gold')
     response3 = requests.get(url, params=params3)
-    print('Got Europe VIX')
+    print('Got Euro')
     response4 = requests.get(url, params=params4)
-    print('Got Rassel VIX')
+    print('Got Russell')
     response5 = requests.get(url, params=params5)
-    print('Got Em Markets')
+    print('Got Emerging Markets')
+    response6 = requests.get(url, params=params6)
+    print('Got NASDAQ')
 
-    print('Start parsing responses')
+    print('Начинаю парсинг')
     rest1 = response1.json()['observations']
     vix_list = []
+    date_vix = []
     for i in range(len(rest1)):
         if len(rest1[i]['value']) == 1:
-           continue
+            continue
         else:
             vix_list.append(float(rest1[i]['value']))
+            date_vix.append(rest1[i]['date'])
 
     rest2 = response2.json()['observations']
     gold_list = []
@@ -232,7 +248,29 @@ def fred_vix():
         else:
             razv_list.append(float(rest5[i]['value']))
 
-    print('Taking values')
+    rest6 = response6.json()['observations']
+    nasdaq_list = []
+    date_nasdaq = []
+    for i in range(len(rest6)):
+        if len(rest6[i]['value']) == 1:
+            continue
+        else:
+            nasdaq_list.append(float(rest6[i]['value']))
+            date_nasdaq.append(rest6[i]['date'])
+
+    print('Формирую RSI и VIX')
+    DFV = pd.DataFrame(vix_list, index=date_vix, columns=['VIX'])
+
+    DFV['RSI'] = pta.rsi(DFV['VIX'])
+    DFV.dropna(inplace=True)
+
+    DFN = pd.DataFrame(nasdaq_list, index=date_nasdaq, columns=['VIX'])
+
+    DFN['RSI'] = pta.rsi(DFN['VIX'])
+    DFN.dropna(inplace=True)
+
+    print(DFV)
+    print(DFN['RSI'][-1])
 
     VIX = {
         'current': vix_list[-1],
@@ -260,7 +298,25 @@ def fred_vix():
         'max': max(razv_list)
     }
 
-    return VIX, GOLD, EUROPE, RASSEL, RAZVITIE
+    NASDAQ = {
+        'current': nasdaq_list[-1],
+        'min': min(nasdaq_list),
+        'max': max(nasdaq_list)
+    }
+
+    RSI_VIX = {
+        'current': round(DFV['RSI'][-1], 2),
+        'min': round(DFV['RSI'].min(), 2),
+        'max': round(DFV['RSI'].max(), 2)
+    }
+
+    RSI_NASDAQ = {
+        'current': round(DFN['RSI'][-1], 2),
+        'min': round(DFN['RSI'].min(), 2),
+        'max': round(DFN['RSI'].max(), 2)
+    }
+
+    return VIX, GOLD, EUROPE, RASSEL, RAZVITIE, NASDAQ, RSI_VIX, RSI_NASDAQ
 
 
 def china_vix():

@@ -264,7 +264,7 @@ async def vix_sender():
     usersFile = open("users.txt", "r")
     users = set()
     print('Загружаю данные')
-    vix, gold, euro, rassel, emerg = fred_vix()
+    vix, gold, euro, rassel, emerg, nasdaq, rsi_vix, rsi_nasdaq = fred_vix()
     china = china_vix()
     print('Начинаю рассылку VIX')
     for line in usersFile:
@@ -278,6 +278,9 @@ async def vix_sender():
         await bot.send_message(user, f"Rassel2000 VIX: {rassel}")
         await bot.send_message(user, f"Emerging VIX: {emerg}")
         await bot.send_message(user, f"China VIX: {china}")
+        await bot.send_message(user, f"NASDAQ VIX: {nasdaq}")
+        await bot.send_message(user, f"VIX RSI: {rsi_vix}")
+        await bot.send_message(user, f"NASDAQ VIX: {rsi_nasdaq}")
     print('Рассылка завершена')
 
 

@@ -1,6 +1,8 @@
 import requests
 import datetime
 from dateutil.relativedelta import relativedelta
+import pandas as pd
+import pandas_ta as pta
 
 def fred_vix():
     today_d = datetime.date.today().strftime("%Y-%m-%d")
@@ -54,6 +56,16 @@ def fred_vix():
         'api_key': key,
         'file_type': 'json',
     }
+    params6 = {
+        'series_id': 'VXNCLS',
+        'realtime_start': six_mo,
+        'realtime_end': today_d,
+        'observation_start': six_mo,
+        'observation_end': today_d,
+        'api_key': key,
+        'file_type': 'json',
+    }
+
 
     response1 = requests.get(url, params=params1)
     print('Got it')
@@ -65,16 +77,21 @@ def fred_vix():
     print('Got it')
     response5 = requests.get(url, params=params5)
     print('Got it')
+    response6 = requests.get(url, params=params6)
+    print('Got it')
 
     print(response1.json())
     print(len(response1.json()))
+
     rest1 = response1.json()['observations']
     vix_list = []
+    date_vix = []
     for i in range(len(rest1)):
         if len(rest1[i]['value']) == 1:
-           continue
+            continue
         else:
             vix_list.append(float(rest1[i]['value']))
+            date_vix.append(rest1[i]['date'])
 
     rest2 = response2.json()['observations']
     gold_list = []
@@ -108,11 +125,35 @@ def fred_vix():
         else:
             razv_list.append(float(rest5[i]['value']))
 
+    rest6 = response6.json()['observations']
+    nasdaq_list = []
+    date_nasdaq = []
+    for i in range(len(rest6)):
+        if len(rest6[i]['value']) == 1:
+            continue
+        else:
+            nasdaq_list.append(float(rest6[i]['value']))
+            date_nasdaq.append(rest6[i]['date'])
+
     print(vix_list)
     print(gold_list)
     print(euro_list)
     print(rassel_list)
     print(razv_list)
+    print(nasdaq_list)
+
+    DFV = pd.DataFrame(vix_list, index=date_vix, columns=['VIX'])
+
+    DFV['RSI'] = pta.rsi(DFV['VIX'])
+    DFV.dropna(inplace=True)
+
+    DFN = pd.DataFrame(nasdaq_list, index=date_nasdaq, columns=['VIX'])
+
+    DFN['RSI'] = pta.rsi(DFN['VIX'])
+    DFN.dropna(inplace=True)
+
+    print(DFV)
+    print(DFN['RSI'][-1])
 
     VIX = {
         'current': vix_list[-1],
@@ -140,15 +181,28 @@ def fred_vix():
         'max': max(razv_list)
     }
 
+    RSI_VIX = {
+        'current': round(DFV['RSI'][-1], 2),
+        'min': round(DFV['RSI'].min(), 2),
+        'max': round(DFV['RSI'].max(), 2)
+    }
+
+    RSI_NASDAQ = {
+        'current': round(DFN['RSI'][-1], 2),
+        'min': round(DFN['RSI'].min(), 2),
+        'max': round(DFN['RSI'].max(), 2)
+    }
+
     print(f'VIX: {VIX}')
     print(f'GOLD VIX: {GOLD}')
     print(f'EUROPE VIX: {EUROPE}')
     print(f'RASSEL VIX: {RASSEL}')
     print(f'RAZV VIX: {RAZVITIE}')
 
-    return VIX, GOLD, EUROPE, RASSEL, RAZVITIE
+    return VIX, GOLD, EUROPE, RASSEL, RAZVITIE, RSI_VIX, RSI_NASDAQ
 
 
-res1, res2, res3, res4, res5 = fred_vix()
+res1, res2, res3, res4, res5, res6, res7 = fred_vix()
 
 print(f'VIx: {res1}')
+print(f'RSI VIX: {res6}')
