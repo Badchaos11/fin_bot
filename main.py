@@ -79,7 +79,7 @@ async def vix_values(message: types.Message):
     await bot.send_message(message.from_user.id, f"Gold VIX: {gold}")
     await bot.send_message(message.from_user.id, f"Euro VIX: {euro}")
     await bot.send_message(message.from_user.id, f"Russell 2000 VIX: {rassel}")
-    await bot.send_message(message.from_user.id, f"Emering VIX: {emerg}")
+    await bot.send_message(message.from_user.id, f"Emerging VIX: {emerg}")
     await bot.send_message(message.from_user.id, f"China VIX: {china}")
     await bot.send_message(message.from_user.id, f"NASDAQ VIX: {nasdaq}")
     await bot.send_message(message.from_user.id, f"RSI VIX: {rsi_vix}")
