@@ -269,9 +269,6 @@ def fred_vix():
     DFN['RSI'] = pta.rsi(DFN['VIX'])
     DFN.dropna(inplace=True)
 
-    print(DFV)
-    print(DFN['RSI'][-1])
-
     VIX = {
         'current': vix_list[-1],
         'min': min(vix_list),
