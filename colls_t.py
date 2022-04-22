@@ -173,6 +173,7 @@ for tick in yahoo_list:
 
         rsi_pr = pta.rsi(ohlc[tick])
         rsi.append(rsi_pr[-1])
+        print(rsi)
 
         tickers_list.append(tick)
     except:
@@ -219,7 +220,7 @@ print(TOTAL_DF.columns.values.tolist() + TOTAL_DF.values.tolist())
 print(TOTAL_DF['Ticker'][:10].tolist())
 
 
-worksheet.update(f'A{tmp+3}', TOTAL_DF.values.tolist())
+#worksheet.update(f'A{tmp+3}', TOTAL_DF.values.tolist())
 
 at = worksheet.get(f'A{tmp+3}:A{tmp+12}')
 

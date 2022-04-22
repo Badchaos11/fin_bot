@@ -1,21 +1,4 @@
-import asyncio
-import os
-import sys
-import datetime
-#from datetime import datetime
-
-import aioschedule
-import dateutil.relativedelta
-import httplib2
-import mibian
-import pandas_ta as pta
-from googleapiclient import discovery
-from oauth2client.service_account import ServiceAccountCredentials
-
-from func import *
-from main import bot
-
-
+'''
 async def updater():
     rows = rows_load()  # Внимательно, заполнить количество строк!!!!!!!
 
@@ -128,7 +111,6 @@ async def updater_colls():
     gf_list = []
     TOTAL_DF = pd.DataFrame()
 
-    print('Загружаю тикеры в гуру')
     for tick in guru_tickers:
         print(tick)
         try:
@@ -211,8 +193,8 @@ async def updater_colls():
 
     for tick in yahoo_list:
         try:
-            today = datetime.datetime.today()
-            start_vol = (datetime.datetime.today() - dateutil.relativedelta.relativedelta(years=1))
+            today = datetime.today()
+            start_vol = (datetime.today() - relativedelta.relativedelta(years=1))
             end_vol = today
 
             ohlc = pd.DataFrame()
@@ -266,12 +248,13 @@ async def vix_sender():
     usersFile = open("users.txt", "r")
     users = set()
     print('Загружаю данные')
-    vix, gold, euro, rassel, emerg, nasdaq, rsi_vix, rsi_nasdaq = fred_vix()
+    vix, gold, euro, rassel, emerg = fred_vix()
     china = china_vix()
     print('Начинаю рассылку VIX')
     for line in usersFile:
         users.add(line.strip())
     usersFile.close()
+    print(users)
     for user in users:
         print('Отправляю сообщение ' + str(user))
         await bot.send_message(user, f"VIX: {vix}")
@@ -280,9 +263,6 @@ async def vix_sender():
         await bot.send_message(user, f"Rassel2000 VIX: {rassel}")
         await bot.send_message(user, f"Emerging VIX: {emerg}")
         await bot.send_message(user, f"China VIX: {china}")
-        await bot.send_message(user, f"NASDAQ VIX: {nasdaq}")
-        await bot.send_message(user, f"VIX RSI: {rsi_vix}")
-        await bot.send_message(user, f"NASDAQ VIX: {rsi_nasdaq}")
     print('Рассылка завершена')
 
 
@@ -308,65 +288,19 @@ async def sender():
             pass
     print('Рассылка зваершена')
 
-# Расписание на каждый день недели
-
-
+# Изменить время отправки на серверное
 async def scheduler():
-    # Понедельник
-    aioschedule.every().monday.at("12:00").do(vix_sender)
-    aioschedule.every().monday.at("12:30").do(updater)
-    aioschedule.every().monday.at("12:33").do(updater_colls)
-    aioschedule.every().monday.at("12:35").do(sender)
-    aioschedule.every().monday.at("16:30").do(updater)
-    aioschedule.every().monday.at("16:33").do(updater_colls)
-    aioschedule.every().monday.at("16:35").do(sender)
-    aioschedule.every().monday.at("22:30").do(updater)
-    aioschedule.every().monday.at("22:33").do(updater_colls)
-    aioschedule.every().monday.at("22:35").do(sender)
-    # Вторник
-    aioschedule.every().tuesday.at("12:00").do(vix_sender)
-    aioschedule.every().tuesday.at("12:30").do(updater)
-    aioschedule.every().tuesday.at("12:33").do(updater_colls)
-    aioschedule.every().tuesday.at("12:35").do(sender)
-    aioschedule.every().tuesday.at("16:30").do(updater)
-    aioschedule.every().tuesday.at("16:33").do(updater_colls)
-    aioschedule.every().tuesday.at("16:35").do(sender)
-    aioschedule.every().tuesday.at("22:30").do(updater)
-    aioschedule.every().tuesday.at("22:33").do(updater_colls)
-    aioschedule.every().tuesday.at("22:35").do(sender)
-    # Среда
-    aioschedule.every().wednesday.at("12:00").do(vix_sender)
-    aioschedule.every().wednesday.at("12:30").do(updater)
-    aioschedule.every().wednesday.at("12:33").do(updater_colls)
-    aioschedule.every().wednesday.at("12:35").do(sender)
-    aioschedule.every().wednesday.at("16:30").do(updater)
-    aioschedule.every().wednesday.at("16:33").do(updater_colls)
-    aioschedule.every().wednesday.at("16:35").do(sender)
-    aioschedule.every().wednesday.at("22:30").do(updater)
-    aioschedule.every().wednesday.at("22:33").do(updater_colls)
-    aioschedule.every().wednesday.at("22:35").do(sender)
-    # Четверг
-    aioschedule.every().thursday.at("12:00").do(vix_sender)
-    aioschedule.every().thursday.at("12:30").do(updater)
-    aioschedule.every().thursday.at("12:33").do(updater_colls)
-    aioschedule.every().thursday.at("12:35").do(sender)
-    aioschedule.every().thursday.at("16:30").do(updater)
-    aioschedule.every().thursday.at("16:33").do(updater_colls)
-    aioschedule.every().thursday.at("16:35").do(sender)
-    aioschedule.every().thursday.at("22:30").do(updater)
-    aioschedule.every().thursday.at("22:33").do(updater_colls)
-    aioschedule.every().thursday.at("22:35").do(sender)
-    # Пятница
-    aioschedule.every().friday.at("12:00").do(vix_sender)
-    aioschedule.every().friday.at("12:30").do(updater)
-    aioschedule.every().friday.at("14:54").do(updater_colls)
-    aioschedule.every().friday.at("14:56").do(sender)
-    aioschedule.every().friday.at("16:30").do(updater)
-    aioschedule.every().friday.at("16:33").do(updater_colls)
-    aioschedule.every().friday.at("16:35").do(sender)
-    aioschedule.every().friday.at("22:30").do(updater)
-    aioschedule.every().friday.at("22:33").do(updater_colls)
-    aioschedule.every().friday.at("22:35").do(sender)
+    aioschedule.every().day.at("17:18").do(vix_sender)
+    aioschedule.every().day.at("12:30").do(updater)  # Для выбора времени рассылки изменить чисто в скобках после at
+    aioschedule.every().day.at("12:33").do(updater_colls)
+    aioschedule.every().day.at("14:51").do(sender)
+    aioschedule.every().day.at("16:30").do(updater)
+    aioschedule.every().day.at("16:33").do(updater_colls)
+    aioschedule.every().day.at("17:15").do(sender)  # Для выбора времени рассылки изменить чисто в скобках после at
+    aioschedule.every().day.at("22:30").do(updater)
+    aioschedule.every().day.at("22:33").do(updater_colls)
+    aioschedule.every().day.at("22:35").do(sender)
     while True:  # Чтобы довавить дополнительную рассылку скопировать строку выше и выбрать время
         await aioschedule.run_pending()
         await asyncio.sleep(1)
+'''

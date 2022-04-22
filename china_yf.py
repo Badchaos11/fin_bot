@@ -14,15 +14,17 @@ tickers_list = []
 for i in range(len(hk)):
     tickers_list.append(hk['ticker Guru'][i])
     tickers_list[i] = tickers_list[i][6:] + '.HK'
-    #tickers_list[i] = tickers_list[i] + '.HK'
 
 print(tickers_list)
+ohlt = yf.download('KWEB', six_mo, today_d)
+print(ohlt)
 
 ohlc = yf.download(tickers_list, start=six_mo, end=today_d)['Adj Close']
 ohl = (np.log(ohlc / ohlc.shift(-1)))
 
 vix = []
 len_o = int(len(ohl) / 2)
+print(len_o)
 
 for i in range(len_o + 1):
     ohl_y2 = ohl[i: len_o + i]
