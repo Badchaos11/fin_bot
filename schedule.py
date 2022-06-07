@@ -3,6 +3,7 @@ import os
 import sys
 import datetime
 #from datetime import datetime
+import time
 
 import aioschedule
 import dateutil.relativedelta
@@ -77,14 +78,19 @@ async def updater():
 
         except:
             pass
+    print('Ждем квоту')
+
+    await asyncio.sleep(60)
 
     print('Начинаю заполнение документа')
-    gc = gd.service_account(filename='Seetzzz-1cb93f64d8d7.json')
+    gc = gd.service_account(filename='options-349716-50a9f6e13067.json')
     worksheet = gc.open("work_table").worksheet("Опционный портфель (short)")
     for i in range(len(df3)):
         try:
+            print(df3['Current Premium'][i])
             worksheet.update(f"L{i + 2}", df3['Current Premium'][i])
         except:
+            print(df3['Current Premium'][i])
             pass
     #print(df3)
 
@@ -204,6 +210,8 @@ async def updater_colls():
             yahoo_list.append(listus[num].split(':')[1])
         elif 'ARCA:' in listus[num]:
             yahoo_list.append(listus[num].split(':')[1])
+        else:
+            yahoo_list.append(listus[num])
 
     std_list = []
     std_30_list = []
@@ -258,7 +266,8 @@ async def updater_colls():
     TOTAL_DF = TOTAL_DF.sort_values('Total_score').reset_index(drop=True)
 
     print("Обновляю документ")
-    worksheet.update(f'A{update_from+3}', TOTAL_DF.values.tolist())
+    #worksheet.update(f'A{update_from+3}', TOTAL_DF.values.tolist())
+    print(TOTAL_DF['Ticker'])
     print("Обновление завершено")
 
 
@@ -308,6 +317,7 @@ async def sender():
             pass
     print('Рассылка зваершена')
 
+
 # Расписание на каждый день недели
 
 
@@ -350,7 +360,7 @@ async def scheduler():
     aioschedule.every().thursday.at("12:30").do(updater)
     aioschedule.every().thursday.at("12:33").do(updater_colls)
     aioschedule.every().thursday.at("12:35").do(sender)
-    aioschedule.every().thursday.at("16:30").do(updater)
+    aioschedule.every().thursday.at("14:38").do(updater)
     aioschedule.every().thursday.at("16:33").do(updater_colls)
     aioschedule.every().thursday.at("16:35").do(sender)
     aioschedule.every().thursday.at("22:30").do(updater)
@@ -359,7 +369,7 @@ async def scheduler():
     # Пятница
     aioschedule.every().friday.at("12:00").do(vix_sender)
     aioschedule.every().friday.at("12:30").do(updater)
-    aioschedule.every().friday.at("14:54").do(updater_colls)
+    aioschedule.every().friday.at("20:25").do(updater_colls)
     aioschedule.every().friday.at("14:56").do(sender)
     aioschedule.every().friday.at("16:30").do(updater)
     aioschedule.every().friday.at("16:33").do(updater_colls)

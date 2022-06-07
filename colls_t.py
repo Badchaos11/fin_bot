@@ -11,7 +11,7 @@ import requests
 import yfinance as yf
 
 
-gc = gd.service_account(filename='Seetzzz-1cb93f64d8d7.json')
+gc = gd.service_account(filename='options-349716-50a9f6e13067.json')
 worksheet = gc.open("work_table").worksheet('Активы с Call опционами')
 
 
@@ -31,7 +31,7 @@ for i in range(len(d_len)):
         print(f"{d[i]}   {q[i]}")
     else:
         break
-print(q)
+
 for i in range(len(a_tick)):
     a.append(a_tick[i])
     a[i] = str(a[i])[2:-2]
@@ -39,16 +39,12 @@ for i in range(len(a_tick)):
         tmp = i
         break
 
-print(q_len[0])
 print(a)
-print(tmp)
+
 guru_tickers = []
 for i in range(len(d)):
     if q[i] == 0:
         guru_tickers.append(str(d[i])[2:-2])
-
-
-
 
 print(d)
 print(len(d))
@@ -80,6 +76,7 @@ for tick in guru_tickers:
     except Exception as e:
         tickers_list.append(tick)
         gf_list.append(0)
+        print('Салам пополам')
         print(e)
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -94,59 +91,71 @@ print(TOTAL_DF)
 
 listus = TOTAL_DF['Ticker'].tolist()
 yahoo_list = []
+j = 0
 for num in range(len(listus)):
-        if "TSX:" in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.TO')
-        elif 'TSXV:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.V')
-        elif 'XSWX:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.SW')
-        elif 'IST:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.IS')
-        elif 'XKLS:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.KL')
-        elif 'LSE:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.L')
-        elif 'SGX:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.SI')
-        elif 'HKSE:0' in listus[num]:
-            yahoo_list.append(listus[num].replace('HKSE:0', '')+'.HK')
-        elif 'ASX:' in listus[num]:
+    print(j)
+    print(listus[num])
+    if "TSX:" in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.TO')
+    elif 'TSXV:' in listus[num]:
+         yahoo_list.append(listus[num].split(':')[1]+'.V')
+    elif 'XSWX:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.SW')
+    elif 'IST:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.IS')
+    elif 'XKLS:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.KL')
+    elif 'LSE:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.L')
+    elif 'SGX:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.SI')
+    elif 'HKSE:0' in listus[num]:
+        yahoo_list.append(listus[num].replace('HKSE:0', '')+'.HK')
+    elif 'ASX:' in listus[num]:
             yahoo_list.append(listus[num].split(':')[1]+'.AX')
-        elif 'JSE:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.JO')
-        elif 'XTAE:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.TA')
-        elif 'TSE:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.T')
-        elif 'MIC:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.ME')
+    elif 'JSE:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.JO')
+    elif 'XTAE:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.TA')
+    elif 'TSE:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.T')
+    elif 'MIC:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.ME')
         # elif 'MEX:' in listus[num]:
         #     yahoo_list.append(listus[num].split(':')[1]+'.MX')
-        elif 'XMAD:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.MC')
-        elif 'FRA:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.F')
-        elif 'XAMS:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.AS')
-        elif 'XBRU:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.BR')
-        elif 'XPAR:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.PA')
-        elif 'MIL:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1]+'.MI')
-        elif 'NAS:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1])
-        elif 'NYSE:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1])
-        elif 'AMEX:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1])
-        elif 'ARCA:' in listus[num]:
-            yahoo_list.append(listus[num].split(':')[1])
+    elif 'XMAD:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.MC')
+    elif 'FRA:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.F')
+    elif 'XAMS:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.AS')
+    elif 'XBRU:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.BR')
+    elif 'XPAR:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.PA')
+    elif 'MIL:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1]+'.MI')
+    elif 'NAS:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1])
+    elif 'NYSE:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1])
+    elif 'AMEX:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1])
+    elif 'ARCA:' in listus[num]:
+        yahoo_list.append(listus[num].split(':')[1])
+    else:
+        yahoo_list.append(listus[num])
+    print(yahoo_list[-1])
+    j += 1
 
 std_list = []
 std_30_list = []
 rsi = []
+i = 0
+print(listus)
+print(len(listus))
+print(yahoo_list)
+print(len(yahoo_list))
 
 for tick in yahoo_list:
     try:
@@ -172,13 +181,17 @@ for tick in yahoo_list:
         std_30_list.append(std_30)
 
         rsi_pr = pta.rsi(ohlc[tick])
+        print(tick)
+        print(rsi_pr[-1])
+        i += 1
         rsi.append(rsi_pr[-1])
-        print(rsi)
 
         tickers_list.append(tick)
     except:
-        pass
+        print(f'Ticker {tick} dont works today!')
 
+print(rsi)
+print(f"Total cycles {i}")
 TOTAL_DF['RSI'] = rsi
 TOTAL_DF['std'] = std_list
 TOTAL_DF['std_30'] = std_30_list
@@ -211,16 +224,10 @@ TOTAL_DF = TOTAL_DF.sort_values('Total_score').reset_index(drop=True)
 print('Last')
 print(TOTAL_DF)
 
-print(TOTAL_DF.columns.values.tolist())
-print(TOTAL_DF.values.tolist())
-print(TOTAL_DF.columns.values.tolist() + TOTAL_DF.values.tolist())
-
-
-
 print(TOTAL_DF['Ticker'][:10].tolist())
 
 
-#worksheet.update(f'A{tmp+3}', TOTAL_DF.values.tolist())
+worksheet.update(f'A{tmp+3}', TOTAL_DF.values.tolist())
 
 at = worksheet.get(f'A{tmp+3}:A{tmp+12}')
 

@@ -99,5 +99,5 @@ async def to_start(message: types.Message):
 
 # Старт бота
 if __name__ == '__main__':
-    print('Танец бешеной белки начинается!')
+    print('Взгляни вокруг, оглянись назад.')
     executor.start_polling(dp, skip_updates=False, on_startup=on_startup)
