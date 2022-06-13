@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 import pandas_ta as pta
 
+
 def fred_vix():
     today_d = datetime.date.today().strftime("%Y-%m-%d")
     six_mo = datetime.date.today() + relativedelta(months=-6)
@@ -200,9 +201,3 @@ def fred_vix():
     print(f'RAZV VIX: {RAZVITIE}')
 
     return VIX, GOLD, EUROPE, RASSEL, RAZVITIE, RSI_VIX, RSI_NASDAQ
-
-
-res1, res2, res3, res4, res5, res6, res7 = fred_vix()
-
-print(f'VIx: {res1}')
-print(f'RSI VIX: {res6}')

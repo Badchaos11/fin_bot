@@ -17,7 +17,7 @@ rows = rows_load()
 
 print('Начинаю обновление документа')
 LIST = 'Опционный портфель (short)'
-CREDENTIALS_FILE = 'Seetzzz-1cb93f64d8d7.json'
+CREDENTIALS_FILE = '../Seetzzz-1cb93f64d8d7.json'
 spreadsheet_id = '1bfNJIgSEo9V5Jww1-EoUh_onba2bGY2LpDVx4aYlPzc'
 credentials = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE,
                                                                    ['https://www.googleapis.com/auth/spreadsheets',

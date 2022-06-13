@@ -9,7 +9,6 @@ import numpy as np
 import pandas_ta as pta
 
 
-
 def stock_price(ticker):
 
     #ticker = 'INTC'

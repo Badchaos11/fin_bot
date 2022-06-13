@@ -11,7 +11,7 @@ import requests
 import yfinance as yf
 
 
-gc = gd.service_account(filename='options-349716-50a9f6e13067.json')
+gc = gd.service_account(filename='../options-349716-50a9f6e13067.json')
 worksheet = gc.open("work_table").worksheet('Активы с Call опционами')
 
 
@@ -67,7 +67,7 @@ for tick in guru_tickers:
     try:
         data_json = requests.get(
             f'https://api.gurufocus.com/public/user/34b27ff5b013ecb09d2eeafdf8724472:683d6c833f9571582151f19efe2278a8/stock/{tick}/summary').json()
-
+        print(data_json)
         gf = data_json['summary']['company_data']['p2gf_value']
 
         tickers_list.append(tick)
@@ -76,8 +76,6 @@ for tick in guru_tickers:
     except Exception as e:
         tickers_list.append(tick)
         gf_list.append(0)
-        print('Салам пополам')
-        print(e)
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
@@ -197,26 +195,15 @@ TOTAL_DF['std'] = std_list
 TOTAL_DF['std_30'] = std_30_list
 TOTAL_DF['dif_vol'] = TOTAL_DF['std_30'] - TOTAL_DF['std']
 
-print('Second')
-print(TOTAL_DF)
-
-TOTAL_DF = TOTAL_DF.sort_values('Gf_value',ascending=False).reset_index(drop=True)
+TOTAL_DF = TOTAL_DF.sort_values('Gf_value', ascending=False).reset_index(drop=True)
 TOTAL_DF['Gf_value_Score'] = TOTAL_DF.index.tolist()
-
-print('Third')
-print(TOTAL_DF)
 
 TOTAL_DF = TOTAL_DF.sort_values('RSI',ascending=False).reset_index(drop=True)
 TOTAL_DF['RSI_Score'] = TOTAL_DF.index.tolist()
 
-print('Fourth')
-print(TOTAL_DF)
 
 TOTAL_DF = TOTAL_DF.sort_values('dif_vol',ascending=False).reset_index(drop=True)
 TOTAL_DF['Vol_Score'] = TOTAL_DF.index.tolist()
-
-print('Fifth')
-print(TOTAL_DF)
 
 TOTAL_DF['Total_score'] = TOTAL_DF['Gf_value_Score'] + TOTAL_DF['RSI_Score'] + TOTAL_DF['Vol_Score']
 TOTAL_DF = TOTAL_DF.sort_values('Total_score').reset_index(drop=True)

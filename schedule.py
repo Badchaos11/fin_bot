@@ -1,100 +1,13 @@
 import asyncio
 import os
 import sys
-import datetime
-#from datetime import datetime
-import time
 
 import aioschedule
 import dateutil.relativedelta
-import httplib2
-import mibian
-import pandas_ta as pta
-from googleapiclient import discovery
-from oauth2client.service_account import ServiceAccountCredentials
 
 from func import *
+from ibapi_options import *
 from main import bot
-
-
-async def updater():
-    rows = rows_load()  # Внимательно, заполнить количество строк!!!!!!!
-
-    print('Начинаю обновление документа')
-    print('Загрузка данных')
-    LIST = 'Опционный портфель (short)'
-    CREDENTIALS_FILE = 'Seetzzz-1cb93f64d8d7.json'
-    spreadsheet_id = '1bfNJIgSEo9V5Jww1-EoUh_onba2bGY2LpDVx4aYlPzc'
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE,
-                                                                   ['https://www.googleapis.com/auth/spreadsheets',
-                                                                    'https://www.googleapis.com/auth/drive'])
-    httpAuth = credentials.authorize(httplib2.Http())
-    service = discovery.build('sheets', 'v4', http=httpAuth)
-    Option_WL = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=f'{LIST}!A1:W10000',
-                                                    majorDimension='COLUMNS').execute()
-
-    df3 = pd.DataFrame()
-    df3['Tickers'] = Option_WL['values'][0][1:rows]
-    df3['Option Type'] = Option_WL['values'][7][1:rows]
-    df3['Stock Price'] = Option_WL['values'][4][1:rows]
-    df3['Stock Price'] = df3['Stock Price'].str.replace(',', '.')
-    df3['Stock Price'] = df3['Stock Price'].astype(float)
-    df3['Strikes'] = Option_WL['values'][9][1:rows]
-    df3['Days_to_exp'] = Option_WL['values'][22][1:rows]
-    df3['Days_to_exp'] = df3['Days_to_exp'].astype(int)
-    df3['Ticker_Yahoo'] = Option_WL['values'][1][1:rows]
-    df3['Currency'] = Option_WL['values'][2][1:rows]
-    df3['Exchange'] = Option_WL['values'][3][1:rows]
-    df3['Strikes'] = df3['Strikes'].str.replace(',', '.')
-    df3['Strikes'] = df3['Strikes'].astype(float)
-    df3['Exp Date'] = Option_WL['values'][21][1:rows]
-    df3['Exp Date'] = df3['Exp Date'].str.replace('.', '-')
-    df3['Exp Date'] = pd.to_datetime(df3['Exp Date'], format='%d-%m-%Y')
-    df3['Exp Date'] = df3['Exp Date'].dt.date
-    df3['Current Premium'] = ''
-    df3.head()
-
-    #print(df3)
-
-    #print(yf.download('FB'))
-    print('Получение данных Яху')
-    for i in range(len(df3)):
-        try:
-            ticker = df3['Ticker_Yahoo'][i]
-
-            ohlc = pd.DataFrame()
-            ohlc[f'{ticker}'] = yf.download(ticker)['Close']
-            days_30 = ohlc[f'{ticker}'][-10:]
-            returns_30 = np.log(days_30 / days_30.shift(-1))
-            daily_std_30 = np.std(returns_30)
-            std_30 = daily_std_30 * 252 ** 0.5
-
-            greeks = mibian.BS([df3['Stock Price'][i], df3['Strikes'][i], 0, df3['Days_to_exp'][i]],
-                               volatility=std_30 * 100)
-            if df3['Option Type'][i] == 'PUT':
-                df3['Current Premium'][i] = round(greeks.putPrice, 2)
-            elif df3['Option Type'][i] == 'CALL':
-                df3['Current Premium'][i] = round(greeks.callPrice, 2)
-
-        except:
-            pass
-    print('Ждем квоту')
-
-    await asyncio.sleep(60)
-
-    print('Начинаю заполнение документа')
-    gc = gd.service_account(filename='options-349716-50a9f6e13067.json')
-    worksheet = gc.open("work_table").worksheet("Опционный портфель (short)")
-    for i in range(len(df3)):
-        try:
-            print(df3['Current Premium'][i])
-            worksheet.update(f"L{i + 2}", df3['Current Premium'][i])
-        except:
-            print(df3['Current Premium'][i])
-            pass
-    #print(df3)
-
-    print('Обновление завершено')
 
 
 async def updater_colls():
@@ -318,65 +231,73 @@ async def sender():
     print('Рассылка зваершена')
 
 
+async def hourly_options():
+    print(f'Starting update options')
+    print(f'Updating shorts {datetime.datetime.now()}')
+    shorts_update()
+    print(f'Updating ETF {datetime.datetime.now()}')
+    hedges('ETF')
+    print(f'Updating Companies {datetime.datetime.now()}')
+    hedges('Компании')
+    print(f'Updating VIX {datetime.datetime.now()}')
+    hedges('VIX')
+    print(f'Finished updating at {datetime.datetime.now()}')
+
 # Расписание на каждый день недели
 
 
 async def scheduler():
     # Понедельник
     aioschedule.every().monday.at("12:00").do(vix_sender)
-    aioschedule.every().monday.at("12:30").do(updater)
+
     aioschedule.every().monday.at("12:33").do(updater_colls)
     aioschedule.every().monday.at("12:35").do(sender)
-    aioschedule.every().monday.at("16:30").do(updater)
+
     aioschedule.every().monday.at("16:33").do(updater_colls)
     aioschedule.every().monday.at("16:35").do(sender)
-    aioschedule.every().monday.at("22:30").do(updater)
+
     aioschedule.every().monday.at("22:33").do(updater_colls)
     aioschedule.every().monday.at("22:35").do(sender)
     # Вторник
     aioschedule.every().tuesday.at("12:00").do(vix_sender)
-    aioschedule.every().tuesday.at("12:30").do(updater)
+
     aioschedule.every().tuesday.at("12:33").do(updater_colls)
     aioschedule.every().tuesday.at("12:35").do(sender)
-    aioschedule.every().tuesday.at("16:30").do(updater)
+
     aioschedule.every().tuesday.at("16:33").do(updater_colls)
     aioschedule.every().tuesday.at("16:35").do(sender)
-    aioschedule.every().tuesday.at("22:30").do(updater)
+
     aioschedule.every().tuesday.at("22:33").do(updater_colls)
     aioschedule.every().tuesday.at("22:35").do(sender)
     # Среда
     aioschedule.every().wednesday.at("12:00").do(vix_sender)
-    aioschedule.every().wednesday.at("12:30").do(updater)
+
     aioschedule.every().wednesday.at("12:33").do(updater_colls)
     aioschedule.every().wednesday.at("12:35").do(sender)
-    aioschedule.every().wednesday.at("16:30").do(updater)
+
     aioschedule.every().wednesday.at("16:33").do(updater_colls)
     aioschedule.every().wednesday.at("16:35").do(sender)
-    aioschedule.every().wednesday.at("22:30").do(updater)
+
     aioschedule.every().wednesday.at("22:33").do(updater_colls)
     aioschedule.every().wednesday.at("22:35").do(sender)
     # Четверг
     aioschedule.every().thursday.at("12:00").do(vix_sender)
-    aioschedule.every().thursday.at("12:30").do(updater)
     aioschedule.every().thursday.at("12:33").do(updater_colls)
     aioschedule.every().thursday.at("12:35").do(sender)
-    aioschedule.every().thursday.at("14:38").do(updater)
     aioschedule.every().thursday.at("16:33").do(updater_colls)
     aioschedule.every().thursday.at("16:35").do(sender)
-    aioschedule.every().thursday.at("22:30").do(updater)
     aioschedule.every().thursday.at("22:33").do(updater_colls)
     aioschedule.every().thursday.at("22:35").do(sender)
     # Пятница
     aioschedule.every().friday.at("12:00").do(vix_sender)
-    aioschedule.every().friday.at("12:30").do(updater)
     aioschedule.every().friday.at("20:25").do(updater_colls)
     aioschedule.every().friday.at("14:56").do(sender)
-    aioschedule.every().friday.at("16:30").do(updater)
     aioschedule.every().friday.at("16:33").do(updater_colls)
     aioschedule.every().friday.at("16:35").do(sender)
-    aioschedule.every().friday.at("22:30").do(updater)
     aioschedule.every().friday.at("22:33").do(updater_colls)
     aioschedule.every().friday.at("22:35").do(sender)
+    # Hourly update
+    aioschedule.every().hour.at(':00').do(hourly_options)
     while True:  # Чтобы довавить дополнительную рассылку скопировать строку выше и выбрать время
         await aioschedule.run_pending()
         await asyncio.sleep(1)
