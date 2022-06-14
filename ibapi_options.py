@@ -2,6 +2,7 @@ import time
 
 import gspread as gd
 import pandas as pd
+import datetime
 
 import ibapi_functions
 from ibapi_functions import ask_checker, bid_checker
@@ -42,11 +43,11 @@ def shorts_update():
             print(option)
             x = ask_checker(option)
             if len(ibapi_functions.asks) != 0:
-                print(f'Asks from f {ibapi_functions.asks}')
+                print(f'Asks from {ibapi_functions.asks}')
                 ask_closes.append(ibapi_functions.asks[-1])
                 ibapi_functions.asks.clear()
             else:
-                print(f'Asks from f {ibapi_functions.asks}')
+                print(f'Asks from {ibapi_functions.asks}')
                 ask_closes.append(None)
             time.sleep(1)
         except:
@@ -68,16 +69,17 @@ def shorts_update():
 
     print('Result DF')
     print(df)
-    df.to_csv('Test_CSV_Amer_09.csv')
+    df.to_csv('Shorts_Options.csv')
     for row_number in w:
         if row_number % 30 == 0:
             print('Need to wait 1 min')
             time.sleep(60)
         if df['Asks Ret'][row_number] > 0:
-            print(f"Insert {df['Asks Ret'][row_number]} into {row_number}")
+            print(f"Insert {df['Ask Close'][row_number]} into {row_number}")
             worksheet.update(f"L{row_number}", df['Asks Ret'][row_number])
         else:
             print(f'Nothing to insert into {row_number}')
+    ibapi_functions.asks.clear()
     print('Wait 1 min before continue')
     time.sleep(60)
 
@@ -113,7 +115,7 @@ def hedges(sheet: str):
     print(options)
     time.sleep(60)
 
-    ask_closes = []
+    bid_closes = []
     if sheet == 'VIX':
         right = 'C'
     else:
@@ -123,16 +125,16 @@ def hedges(sheet: str):
             print(option)
             x = bid_checker(option, right)
             if len(ibapi_functions.asks) != 0:
-                print(f'Asks from f {ibapi_functions.asks}')
-                ask_closes.append(ibapi_functions.asks[-1])
+                print(f'Bid from {ibapi_functions.asks}')
+                bid_closes.append(ibapi_functions.asks[-1])
                 ibapi_functions.asks.clear()
             else:
-                print(f'Asks from f {ibapi_functions.asks}')
-                ask_closes.append(None)
+                print(f'Bid from {ibapi_functions.asks}')
+                bid_closes.append(None)
             time.sleep(1)
         except:
             print('smth went wrong')
-            ask_closes.append(None)
+            bid_closes.append(None)
             time.sleep(1)
             pass
 
@@ -140,21 +142,34 @@ def hedges(sheet: str):
                                              'Expiration Date', 'Number of Contracts', 'Trade Class'])
     df['Idx'] = w
     df = df.set_index('Idx')
-    print(ask_closes)
-    df['Ask Close'] = ask_closes
-    df['Asks Ret'] = df['Ask Close'] * df['Number of Contracts']
+    df['Bid Close'] = bid_closes
+    df['Bids Ret'] = df['Bid Close'] * df['Number of Contracts']
 
     print('Result')
     print(df)
+    df.to_csv(f"Hedges-{sheet}.csv")
 
     for row_number in w:
         if row_number % 30 == 0:
             print('Need to wait 1 min')
             time.sleep(60)
-        if df['Asks Ret'][row_number] > 0:
-            print(f"Insert {df['Asks Ret'][row_number]} into M{row_number}")
-            worksheet.update(f"M{row_number}", df['Asks Ret'][row_number])
+        if df['Bid Close'][row_number] > 0:
+            print(f"Insert {df['Bid Close'][row_number]} into M{row_number}")
+            worksheet.update(f"M{row_number}", df['Bid Close'][row_number])
         else:
             print(f'Nothing to insert into M{row_number}')
+    ibapi_functions.asks.clear()
     print('Wait 1 min before continue')
     time.sleep(60)
+
+
+print(f'Starting update options')
+print(f'Updating shorts {datetime.datetime.now()}')
+shorts_update()
+print(f'Updating ETF {datetime.datetime.now()}')
+hedges('ETF')
+print(f'Updating Companies {datetime.datetime.now()}')
+hedges('Компании')
+print(f'Updating VIX {datetime.datetime.now()}')
+hedges('VIX')
+print(f'Finished updating at {datetime.datetime.now()}')
